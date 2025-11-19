@@ -26,10 +26,16 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // if (error.response?.status === 401) {
-    //   // Unauthorized - redirect to login
-    //   window.location.href = '/login';
-    // }
+    if (error.response?.status === 401) {
+      // Only redirect to login if not already on login page and not during OAuth callback
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath === '/login' || currentPath === '/signup';
+      const hasOAuthParam = window.location.search.includes('oauth=') || window.location.search.includes('error=');
+      
+      if (!isLoginPage && !hasOAuthParam) {
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   }
 );
