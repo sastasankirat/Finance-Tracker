@@ -33,8 +33,8 @@ A modern, full-stack financial management application built with **React**, **Ex
 
 ## 🚀 Live Demo
 
-**Frontend**: [Coming Soon - Deploy to Vercel]  
-**Backend API**: [Coming Soon - Deploy to Render]
+**Frontend**: [Link](https://finance-tracker-vercel-frontend.vercel.app) 
+**Backend API**: [Link](https://finance-tracker-render-backend.onrender.com/api/auth/google/callback)
 
 ---
 
