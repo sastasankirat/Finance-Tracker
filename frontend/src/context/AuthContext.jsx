@@ -20,14 +20,27 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // Listen for OAuth callback success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('oauth') === 'success') {
+      // OAuth callback successful - check auth status and clean up URL
+      checkAuthStatus();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const checkAuthStatus = async () => {
     try {
       const response = await api.get('/auth/status');
       if (response.data.authenticated) {
         setUser(response.data.user);
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
