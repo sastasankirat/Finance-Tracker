@@ -302,9 +302,6 @@ router.get('/google',
   })
 );
 
-// Google OAuth - Callback
-const jwt = require('jsonwebtoken');
-
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login` }),
   (req, res) => {
