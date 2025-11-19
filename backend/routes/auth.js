@@ -10,6 +10,7 @@ const {
   verifyOTP 
 } = require('../models/userModel');
 const { generateOTP, sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
+const jwt = require('jsonwebtoken');
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req, res, next) => {
@@ -302,12 +303,36 @@ router.get('/google',
 );
 
 // Google OAuth - Callback
+const jwt = require('jsonwebtoken');
+
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login` }),
   (req, res) => {
-    // Successful authentication -> redirect to frontend dashboard
-    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`;
-    res.redirect(redirectUrl);
+    try {
+      // Generate JWT
+      const token = jwt.sign(
+        { id: req.user._id.toString(), email: req.user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Set cookie with cross-site options
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,        // must be true on HTTPS
+        sameSite: 'none',    // allow cross-site cookie
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      // Redirect to frontend dashboard
+      const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`;
+      res.redirect(redirectUrl);
+
+    } catch (error) {
+      console.error('Google callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
+    }
   }
 );
 
