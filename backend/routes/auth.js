@@ -303,33 +303,18 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login` }),
+  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth_failed` }),
   (req, res) => {
-    try {
-      // Generate JWT
-      const token = jwt.sign(
-        { id: req.user._id.toString(), email: req.user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      // Set cookie with cross-site options
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: true,        // must be true on HTTPS
-        sameSite: 'none',    // allow cross-site cookie
-        path: '/',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-      });
-
-      // Redirect to frontend dashboard
-      const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`;
+    // Successful authentication - ensure session is saved before redirecting
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=session_error`);
+      }
+      // Successful authentication -> redirect to frontend dashboard
+      const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?oauth=success`;
       res.redirect(redirectUrl);
-
-    } catch (error) {
-      console.error('Google callback error:', error);
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
-    }
+    });
   }
 );
 
